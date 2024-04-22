@@ -19,19 +19,27 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        repassword = request.form['repassword']
+        gmail = request.form['gmail']
+
         db = get_db()
         error = None
 
         if not username:
-            error = 'Username is required.'
+            error = 'Nombre de usuario requerido.'   
         elif not password:
-            error = 'Password is required.'
+            error = 'Contraseña requerido.'
+        elif not repassword:
+            error = 'Contraseña requerido.'
+        elif password != repassword:
+            error = 'Las contraseñas no coisiden.'
+
 
         if error is None:
             try:
                 db.execute(
-                    "INSERT INTO user (username, password) VALUES (?, ?)",
-                    (username, generate_password_hash(password)),
+                    "INSERT INTO user (username, password) VALUES (?, ?, ?)",
+                    (username, generate_password_hash(password),generate_password_hash(repassword), gmail),
                 )
                 db.commit()
             except db.IntegrityError:
@@ -59,9 +67,9 @@ def login():
         ).fetchone()
 
         if user is None:
-            error = 'Incorrect username.'
+            error = 'Nombre de usuario incorrecto.'
         elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
+            error = 'Contraseña incorrecto.'
 
         if error is None:
             session.clear()
